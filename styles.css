@@ -1,0 +1,572 @@
+/* ============================================================
+   GymHub Women — Neon Pink / Dark Techno Theme  v2.0
+   ============================================================ */
+
+:root {
+  --pink: #ff1a72;
+  --pink-light: #ff5fa0;
+  --pink-dim: rgba(255, 26, 114, 0.15);
+  --pink-glow: rgba(255, 26, 114, 0.45);
+  --purple: #9b00ff;
+  --purple-glow: rgba(155, 0, 255, 0.35);
+  --bg-dark: #07070f;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-hover: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-pink: rgba(255, 26, 114, 0.4);
+  --text-primary: #f0f0f8;
+  --text-muted: rgba(240, 240, 248, 0.55);
+  --text-pink: #ff5fa0;
+}
+
+* { box-sizing: border-box; }
+
+body, #root {
+  background: var(--bg-dark) !important;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* ---- Gradient Text ---- */
+.gradient-text {
+  background: linear-gradient(135deg, #ff1a72 0%, #c026d3 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-2 {
+  background: linear-gradient(90deg, #ff5fa0 0%, #ff1a72 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Glassmorphism Card ---- */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+}
+.glass-card-pink {
+  background: var(--pink-dim);
+  border: 1px solid var(--border-pink);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+}
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-pink);
+}
+
+/* ---- Neon Button ---- */
+.btn-neon {
+  background: linear-gradient(135deg, #ff1a72, #9b00ff);
+  border: none;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 50px;
+  padding: 14px 36px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 24px var(--pink-glow), 0 4px 20px rgba(0,0,0,0.4);
+  text-transform: uppercase;
+}
+.btn-neon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 50px var(--pink-glow), 0 0 25px var(--purple-glow), 0 8px 30px rgba(0,0,0,0.5);
+}
+.btn-neon:active { transform: translateY(0); }
+
+.btn-ghost-pink {
+  background: transparent;
+  border: 1px solid var(--border-pink);
+  color: var(--text-pink);
+  font-weight: 600;
+  border-radius: 50px;
+  padding: 10px 28px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.btn-ghost-pink:hover {
+  background: var(--pink-dim);
+  border-color: var(--pink);
+}
+
+/* ============================================================
+   WELCOME SCREEN — HERO IMAGE
+   ============================================================ */
+.hero-image-area {
+  height: 60vh;
+  overflow: hidden;
+}
+
+/* ---- HUD Floating Panel ---- */
+.hud-panel {
+  background: rgba(7, 7, 15, 0.78);
+  border: 1px solid rgba(255, 26, 114, 0.45);
+  border-radius: 8px;
+  padding: 6px 10px;
+  backdrop-filter: blur(14px);
+  min-width: 82px;
+  box-shadow: 0 0 12px rgba(255, 26, 114, 0.12), inset 0 0 8px rgba(255, 26, 114, 0.04);
+}
+.hud-label {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 95, 160, 0.75);
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+.hud-value {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* ---- HUD Stat Card (Welcome bottom) ---- */
+.hud-stat-card {
+  background: rgba(255, 26, 114, 0.07);
+  border: 1px solid rgba(255, 26, 114, 0.22);
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 68px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s;
+}
+.hud-stat-card:hover {
+  background: rgba(255, 26, 114, 0.13);
+  border-color: var(--pink);
+  box-shadow: 0 0 16px var(--pink-glow);
+}
+
+/* ---- Scanlines overlay ---- */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ---- Scan sweep line ---- */
+.scan-sweep {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,26,114,0.65) 40%, rgba(155,0,255,0.5) 60%, transparent 100%);
+  animation: sweep 4s ease-in-out infinite;
+  z-index: 6;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(255,26,114,0.4);
+}
+@keyframes sweep {
+  0%   { top: 0%;   opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ---- Cyber Grid ---- */
+.cyber-grid {
+  background-image:
+    linear-gradient(rgba(255,26,114,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,26,114,0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* ---- Glitch Text ---- */
+.glitch {
+  position: relative;
+  animation: glitch-anim 7s infinite;
+}
+@keyframes glitch-anim {
+  0%, 87%, 100% {
+    text-shadow: none;
+    transform: none;
+  }
+  88% {
+    text-shadow: -3px 0 rgba(255,26,114,0.9), 3px 0 rgba(0,240,255,0.55);
+    transform: skewX(-1.5deg);
+  }
+  89% {
+    text-shadow: 3px 0 rgba(255,26,114,0.9), -3px 0 rgba(0,240,255,0.55);
+    transform: skewX(1.5deg) translateX(-2px);
+  }
+  90% {
+    text-shadow: none;
+    transform: translateX(2px);
+  }
+  91% {
+    text-shadow: -1px 0 rgba(255,26,114,0.7);
+    transform: none;
+  }
+}
+
+/* ---- Neon pulse border (CTA button) ---- */
+.neon-pulse-border {
+  animation: neon-pulse 2.5s ease-in-out infinite;
+}
+@keyframes neon-pulse {
+  0%, 100% { box-shadow: 0 0 24px var(--pink-glow), 0 4px 20px rgba(0,0,0,0.4); }
+  50% { box-shadow: 0 0 55px var(--pink-glow), 0 0 30px var(--purple-glow), 0 4px 20px rgba(0,0,0,0.4); }
+}
+
+/* ============================================================
+   ORB ANIMATIONS
+   ============================================================ */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: float-orb 8s ease-in-out infinite;
+}
+.orb-1 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255,26,114,0.3) 0%, transparent 70%);
+  top: -100px; left: -100px;
+  animation-delay: 0s;
+}
+.orb-2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(155,0,255,0.25) 0%, transparent 70%);
+  top: 30%; right: -80px;
+  animation-delay: -3s;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,26,114,0.2) 0%, transparent 70%);
+  bottom: -50px; left: 30%;
+  animation-delay: -5s;
+}
+@keyframes float-orb {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%  { transform: translateY(-30px) scale(1.05); }
+  66%  { transform: translateY(20px) scale(0.97); }
+}
+
+/* ============================================================
+   BLUETOOTH SCAN RINGS
+   ============================================================ */
+.scan-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--pink);
+  animation: scan-expand 2.5s ease-out infinite;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.scan-ring-1 { width: 80px; height: 80px; animation-delay: 0s; }
+.scan-ring-2 { width: 80px; height: 80px; animation-delay: 0.6s; }
+.scan-ring-3 { width: 80px; height: 80px; animation-delay: 1.2s; }
+@keyframes scan-expand {
+  0%   { width: 80px; height: 80px; opacity: 0.9; }
+  100% { width: 300px; height: 300px; opacity: 0; }
+}
+
+/* ============================================================
+   AI GENERATING RINGS
+   ============================================================ */
+.ai-ring {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.ai-ring-1 {
+  width: 180px; height: 180px;
+  border: 2px solid transparent;
+  border-top-color: #ff1a72;
+  border-right-color: rgba(255,26,114,0.3);
+  animation: spin-cw 2s linear infinite;
+}
+.ai-ring-2 {
+  width: 140px; height: 140px;
+  border: 2px solid transparent;
+  border-bottom-color: #9b00ff;
+  border-left-color: rgba(155,0,255,0.3);
+  animation: spin-ccw 1.5s linear infinite;
+}
+.ai-ring-3 {
+  width: 100px; height: 100px;
+  border: 2px solid transparent;
+  border-top-color: #ff5fa0;
+  border-right-color: rgba(255,95,160,0.3);
+  animation: spin-cw 1s linear infinite;
+}
+@keyframes spin-cw  { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes spin-ccw { to { transform: translate(-50%, -50%) rotate(-360deg); } }
+
+/* ============================================================
+   WORKOUT SESSION
+   ============================================================ */
+
+/* ---- Workout banner ---- */
+.workout-banner {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.workout-banner-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+.workout-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7,7,15,0.9) 0%, rgba(7,7,15,0.5) 50%, rgba(7,7,15,0.75) 100%);
+}
+.workout-banner-content {
+  position: absolute;
+  inset: 0;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ---- Heart Rate Pulse ---- */
+.hr-pulse {
+  animation: hr-beat 0.85s ease-in-out infinite;
+}
+@keyframes hr-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+/* ---- Rep Counter Pop ---- */
+.rep-pop {
+  animation: rep-pop 0.25s ease-out;
+}
+@keyframes rep-pop {
+  0%  { transform: scale(1); }
+  50% { transform: scale(1.35); filter: drop-shadow(0 0 12px #ff1a72); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Band Alert Shake ---- */
+.band-alert {
+  animation: shake 0.5s ease-in-out, alert-glow 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+@keyframes alert-glow {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 30px rgba(255, 80, 0, 0.7); }
+}
+
+/* ---- Exercise HUD metrics ---- */
+.metric-hud {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,26,114,0.2);
+  border-radius: 12px;
+  padding: 8px 10px;
+  text-align: center;
+  flex: 1;
+}
+.metric-hud-value {
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.metric-hud-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* ---- Overall progress ring ---- */
+.progress-ring-track { stroke: var(--border-subtle); }
+.progress-ring-fill {
+  transition: stroke-dashoffset 0.8s ease-out;
+  filter: drop-shadow(0 0 4px rgba(255,26,114,0.6));
+}
+
+/* ============================================================
+   TAXI RADAR
+   ============================================================ */
+.taxi-radar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.taxi-radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 200, 0, 0.6);
+  animation: taxi-scan 2s ease-out infinite;
+}
+.taxi-radar-ring:nth-child(2) { animation-delay: 0.5s; }
+.taxi-radar-ring:nth-child(3) { animation-delay: 1s; }
+@keyframes taxi-scan {
+  0%   { width: 48px; height: 48px; opacity: 1; }
+  100% { width: 160px; height: 160px; opacity: 0; }
+}
+
+/* ============================================================
+   SCORE RING
+   ============================================================ */
+.score-circle {
+  transition: stroke-dashoffset 1.5s ease-out;
+}
+
+/* ============================================================
+   NEON BADGE
+   ============================================================ */
+.neon-badge {
+  background: var(--pink-dim);
+  border: 1px solid var(--border-pink);
+  border-radius: 50px;
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-pink);
+  text-transform: uppercase;
+}
+.neon-badge-purple {
+  background: rgba(155,0,255,0.12);
+  border: 1px solid rgba(155,0,255,0.35);
+  border-radius: 50px;
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #c084fc;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   PROGRESS STEPS
+   ============================================================ */
+.step-pill {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-subtle);
+  transition: all 0.3s ease;
+  flex: 1;
+}
+.step-pill.active { background: linear-gradient(90deg, #ff1a72, #9b00ff); }
+.step-pill.done   { background: var(--pink); }
+
+/* ============================================================
+   SELECTION CARD
+   ============================================================ */
+.select-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.select-card:hover { border-color: var(--border-pink); background: var(--bg-card-hover); }
+.select-card.selected {
+  border-color: var(--pink);
+  background: var(--pink-dim);
+  box-shadow: 0 0 18px var(--pink-glow);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+.slide-up {
+  animation: slide-up 0.55s ease-out both;
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pink), transparent);
+  opacity: 0.5;
+}
+
+.exercise-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s;
+}
+.exercise-item.active-exercise {
+  border-color: var(--pink);
+  background: var(--pink-dim);
+  box-shadow: 0 0 20px var(--pink-glow);
+}
+.exercise-item.completed-exercise {
+  opacity: 0.45;
+  border-color: transparent;
+}
+
+.band-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  animation: band-pulse 1.5s ease-in-out infinite;
+}
+.band-dot.connected    { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.band-dot.disconnected { background: #ef4444; }
+@keyframes band-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-pink); border-radius: 2px; }
+
+.text-pink  { color: var(--text-pink); }
+.text-muted { color: var(--text-muted); }
+.text-main  { color: var(--text-primary); }
+.bg-dark    { background: var(--bg-dark); }

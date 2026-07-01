@@ -1,0 +1,41 @@
+version: "3.9"
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  GymHub Women — AI Coach                                        ║
+# ║  AMD Developer Hackathon: ACT II — Track 3 Unicorn              ║
+# ║  Powered by AMD MI300X GPU × Fireworks AI                       ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - gymhub
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FIREWORKS_API_KEY=${FIREWORKS_API_KEY:-}
+    restart: unless-stopped
+    networks:
+      - gymhub
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  gymhub:
+    driver: bridge

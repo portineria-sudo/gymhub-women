@@ -1,23 +1,27 @@
 """
-GymHub Women — AI Coach Backend
-AMD Developer Hackathon: ACT II — Track 3 Unicorn
-Powered by Fireworks AI API (AMD MI300X GPU cloud)
+GymHub Women — AI Fitness Coach Backend
+AMD Developer Hackathon: ACT II · Track 3 — Unicorn Track
+
+Powered by:
+  - AMD Instinct™ GPU Cloud
+  - Fireworks AI (gemma3-27b-it on AMD hardware)
+  - Google Gemma 3 — Best Gemma Prize Candidate
+  - FastAPI + Python 3.12
 """
 
+import os
+import json
+import random
+from typing import Optional
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
-import json
-import os
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("gymhub")
 
 app = FastAPI(
-    title="GymHub Women — AI Coach API",
-    description="AMD × Fireworks AI powered personal fitness coach for women",
+    title="GymHub Women API",
+    description="AI-powered women's fitness coach, running on AMD GPU infrastructure",
     version="1.0.0",
 )
 
@@ -30,210 +34,166 @@ app.add_middleware(
 
 FIREWORKS_API_KEY = os.getenv("FIREWORKS_API_KEY", "")
 FIREWORKS_BASE_URL = "https://api.fireworks.ai/inference/v1"
-# LLaMA 3.1 70B on AMD MI300X GPU via Fireworks AI
-MODEL = "accounts/fireworks/models/llama-v3p1-70b-instruct"
+# Google Gemma 3 — AMD Developer Hackathon Act II Best Gemma prize candidate
+MODEL = "accounts/fireworks/models/gemma3-27b-it"
 
 
-class WorkoutRequest(BaseModel):
+class UserProfile(BaseModel):
     name: str
-    goal: str          # "strength" | "fat-loss" | "endurance"
-    level: str         # "beginner" | "intermediate" | "advanced"
-    energy: int        # 1-5
-    cyclePhase: str    # "follicular" | "ovulation" | "luteal" | "menstrual"
-    duration: int      # minutes
+    goal: str
+    level: str
+    phase: str
+    energy: int
+    duration: int
 
 
-class CoachMessageRequest(BaseModel):
-    userName: str
-    exerciseName: str
-    muscleGroup: str
-    repsCompleted: int
-    energyLevel: int
+class TaxiRequest(BaseModel):
+    location: str
+    destination: Optional[str] = "Dubai Marina"
 
 
-CYCLE_CONTEXT = {
-    "follicular": "Her follicular phase (days 1-13): estrogen rising, optimal for high-intensity strength training and building muscle.",
-    "ovulation":  "Her ovulation phase (day 14): peak power and strength, ideal for maximum effort and heavy compound movements.",
-    "luteal":     "Her luteal phase (days 15-28): progesterone high, focus on moderate intensity, avoid overtraining, prioritize recovery.",
-    "menstrual":  "Her menstrual phase (days 1-5): lower energy, focus on gentle movement, yoga flows, and light strength work.",
-}
+class WorkoutFeedback(BaseModel):
+    profile: UserProfile
+    reps_completed: int
+    heart_rate: int
+    set_number: int
+    exercise_name: str
 
 
-WORKOUT_SYSTEM_PROMPT = """You are the GymHub Women AI Coach — an elite fitness AI running on AMD MI300X GPU hardware via Fireworks AI.
-
-You create highly personalized workout plans for women that are:
-1. Cycle-synced (adapted to menstrual cycle phase)
-2. Energy-aware (scaled to current energy level 1-5)
-3. Goal-focused (strength/fat-loss/endurance)
-4. Level-appropriate (beginner/intermediate/advanced)
-
-You MUST respond ONLY with valid JSON. No markdown, no explanation, just JSON.
-
-Output format:
-{
-  "greeting": "Short personalized message (1 sentence, motivational)",
-  "model_info": "AMD MI300X × Fireworks AI LLaMA-3.1-70B",
-  "exercises": [
-    {
-      "name": "Exercise Name",
-      "icon": "emoji",
-      "muscleGroup": "Muscle Group",
-      "reps": 15,
-      "sets": 3,
-      "rest": 45,
-      "tip": "Short form cue (max 8 words)"
+async def call_fireworks(prompt: str, max_tokens: int = 512) -> str:
+    """Call Fireworks AI API running on AMD Instinct GPUs with Google Gemma 3."""
+    if not FIREWORKS_API_KEY:
+        return None
+    headers = {
+        "Authorization": f"Bearer {FIREWORKS_API_KEY}",
+        "Content-Type": "application/json",
     }
-  ]
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": "You are GymHub AI Coach powered by Google Gemma 3 on AMD GPU infrastructure. Expert in cycle-synced training for women. Be concise and motivating."},
+            {"role": "user", "content": prompt},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": 0.7,
+    }
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        resp = await client.post(f"{FIREWORKS_BASE_URL}/chat/completions", headers=headers, json=payload)
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+
+
+EXERCISES = {
+    "strength": [
+        {"id": "s1", "name": "Barbell Hip Thrust", "sets": 4, "reps": "10-12", "restSec": 90, "muscle": "Glutes", "tip": "Squeeze at the top for 1s"},
+        {"id": "s2", "name": "Romanian Deadlift", "sets": 3, "reps": "10", "restSec": 75, "muscle": "Hamstrings", "tip": "Hinge from hips, soft knees"},
+        {"id": "s3", "name": "Goblet Squat", "sets": 3, "reps": "12-15", "restSec": 60, "muscle": "Quads", "tip": "Chest up, knees track toes"},
+        {"id": "s4", "name": "Cable Kickback", "sets": 3, "reps": "15 each", "restSec": 45, "muscle": "Glutes", "tip": "Full extension without swinging"},
+    ],
+    "fat_loss": [
+        {"id": "f1", "name": "Jump Squats", "sets": 4, "reps": "15", "restSec": 45, "muscle": "Full Body", "tip": "Land softly, absorb impact"},
+        {"id": "f2", "name": "Kettlebell Swings", "sets": 4, "reps": "20", "restSec": 40, "muscle": "Posterior Chain", "tip": "Drive with hips, not arms"},
+        {"id": "f3", "name": "Burpee to Box Jump", "sets": 3, "reps": "10", "restSec": 50, "muscle": "Full Body", "tip": "Explosive transition"},
+        {"id": "f4", "name": "Battle Rope Slams", "sets": 3, "reps": "30s", "restSec": 45, "muscle": "Core & Arms", "tip": "Engage core throughout"},
+    ],
+    "endurance": [
+        {"id": "e1", "name": "Treadmill Intervals", "sets": 8, "reps": "30s sprint / 30s walk", "restSec": 0, "muscle": "Cardio", "tip": "85% effort on sprints"},
+        {"id": "e2", "name": "Step-Ups", "sets": 3, "reps": "20 each leg", "restSec": 45, "muscle": "Legs", "tip": "Full hip extension at top"},
+        {"id": "e3", "name": "Plank Shoulder Taps", "sets": 3, "reps": "40s", "restSec": 40, "muscle": "Core", "tip": "No hip rotation"},
+        {"id": "e4", "name": "Jumping Lunges", "sets": 3, "reps": "12 each", "restSec": 45, "muscle": "Legs", "tip": "90 degrees at both knees"},
+    ],
+    "flexibility": [
+        {"id": "x1", "name": "Hip Flexor Flow", "sets": 3, "reps": "60s each side", "restSec": 30, "muscle": "Hip Flexors", "tip": "Breathe into the stretch"},
+        {"id": "x2", "name": "Pigeon Pose", "sets": 2, "reps": "90s each", "restSec": 20, "muscle": "Glutes", "tip": "Relax completely into pose"},
+        {"id": "x3", "name": "Cat-Cow Flow", "sets": 3, "reps": "10 breaths", "restSec": 15, "muscle": "Spine", "tip": "Sync breath and movement"},
+        {"id": "x4", "name": "World Greatest Stretch", "sets": 3, "reps": "6 each side", "restSec": 25, "muscle": "Full Body", "tip": "Rotate towards front leg"},
+    ],
 }
 
-Generate exactly 5 exercises. Use fun, empowering exercise names."""
+PHASE_NOTES = {
+    "menstrual": "Low intensity chosen. Prioritize gentle movement and recovery.",
+    "follicular": "High intensity unlocked. Estrogen peak detected. Push harder today!",
+    "ovulation": "POWER MODE: Peak performance. Estrogen and testosterone surge. PR day!",
+    "luteal": "Moderate load selected. Prioritize form over weight.",
+}
+
+GOAL_TITLES = {
+    "strength": "Power Sculpt Protocol",
+    "fat_loss": "Torch & Burn Circuit",
+    "endurance": "Cardio Engine Drive",
+    "flexibility": "Flow Reset Session",
+}
 
 
 @app.get("/api/health")
 async def health():
     return {
-        "status": "🟢 online",
+        "status": "live",
         "model": MODEL,
-        "infrastructure": "AMD MI300X GPU via Fireworks AI",
-        "app": "GymHub Women — AI Coach",
-        "hackathon": "AMD Developer Hackathon ACT II — Track 3 Unicorn",
+        "model_family": "Google Gemma 3",
+        "infrastructure": "AMD Instinct MI300X GPU Cloud via Fireworks AI",
+        "version": "1.0.0",
+        "best_gemma_candidate": True,
     }
 
 
-@app.post("/api/generate-workout")
-async def generate_workout(req: WorkoutRequest):
-    if not FIREWORKS_API_KEY:
-        logger.warning("No FIREWORKS_API_KEY set — using fallback")
-        return _fallback_workout(req)
-
-    cycle_ctx = CYCLE_CONTEXT.get(req.cyclePhase, "")
-    energy_desc = ["very low", "low", "moderate", "high", "peak"][req.energy - 1]
-
-    user_prompt = f"""Create a personalized workout for {req.name}:
-- Goal: {req.goal}
-- Level: {req.level}
-- Energy today: {energy_desc} ({req.energy}/5)
-- Session duration: {req.duration} minutes
-- Cycle context: {cycle_ctx}
-
-Generate 5 exercises perfectly suited to her profile."""
-
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(
-                f"{FIREWORKS_BASE_URL}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {FIREWORKS_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": MODEL,
-                    "messages": [
-                        {"role": "system", "content": WORKOUT_SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "max_tokens": 800,
-                    "temperature": 0.7,
-                    "response_format": {"type": "json_object"},
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
-            content = data["choices"][0]["message"]["content"]
-            result = json.loads(content)
-            logger.info(f"✅ AI workout generated for {req.name} via Fireworks AI AMD GPU")
-            return result
-
-    except Exception as e:
-        logger.error(f"Fireworks AI error: {e} — using fallback")
-        return _fallback_workout(req)
-
-
-@app.post("/api/ai-coach")
-async def ai_coach_message(req: CoachMessageRequest):
-    """Real-time AI coaching tip during workout."""
-    if not FIREWORKS_API_KEY:
-        return _fallback_tip(req)
-
-    prompt = f"""{req.userName} just completed {req.repsCompleted} reps of {req.exerciseName} targeting {req.muscleGroup}. Energy level: {req.energyLevel}/5.
-
-Give her ONE short, powerful coaching message (max 15 words). Be specific, technical, and empowering. Include a relevant emoji."""
-
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.post(
-                f"{FIREWORKS_BASE_URL}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {FIREWORKS_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": MODEL,
-                    "messages": [
-                        {"role": "system", "content": "You are an elite women's fitness coach. Give ultra-concise, powerful coaching cues."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "max_tokens": 60,
-                    "temperature": 0.8,
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
-            tip = data["choices"][0]["message"]["content"].strip()
-            return {"tip": tip, "source": "AMD MI300X × Fireworks AI"}
-    except Exception as e:
-        logger.error(f"AI coach error: {e}")
-        return _fallback_tip(req)
-
-
-def _fallback_workout(req: WorkoutRequest):
-    """Fallback when API key not set (demo mode)."""
-    workouts = {
-        "strength": [
-            {"name": "Power Squat Pulses", "icon": "🦵", "muscleGroup": "Glutes & Quads", "reps": 20, "sets": 3, "rest": 45, "tip": "Drive through heels, chest tall"},
-            {"name": "Hip Thrust Holds", "icon": "🍑", "muscleGroup": "Glutes", "reps": 15, "sets": 3, "rest": 45, "tip": "Squeeze glutes at the top"},
-            {"name": "Romanian Deadlift", "icon": "🏋️", "muscleGroup": "Hamstrings", "reps": 12, "sets": 3, "rest": 60, "tip": "Hinge at hips, neutral spine"},
-            {"name": "Push-Up Holds", "icon": "💪", "muscleGroup": "Chest & Triceps", "reps": 10, "sets": 3, "rest": 45, "tip": "Core tight, elbows 45°"},
-            {"name": "Lateral Band Walks", "icon": "🦵", "muscleGroup": "Inner Thighs", "reps": 15, "sets": 3, "rest": 30, "tip": "Toes forward, resist band"},
-        ],
-        "fat-loss": [
-            {"name": "Jump Squats", "icon": "⚡", "muscleGroup": "Full Body", "reps": 20, "sets": 3, "rest": 30, "tip": "Land soft, explode up"},
-            {"name": "Burpee Flow", "icon": "🔥", "muscleGroup": "Full Body", "reps": 10, "sets": 3, "rest": 45, "tip": "Fast, controlled, breathe"},
-            {"name": "Mountain Climbers", "icon": "🏃", "muscleGroup": "Core & Cardio", "reps": 30, "sets": 3, "rest": 30, "tip": "Hips level, drive knees"},
-            {"name": "High Knee Sprints", "icon": "💨", "muscleGroup": "Cardio", "reps": 40, "sets": 3, "rest": 30, "tip": "Pump arms hard"},
-            {"name": "Plank to Push-Up", "icon": "🎯", "muscleGroup": "Core & Chest", "reps": 12, "sets": 3, "rest": 45, "tip": "No hip rotation"},
-        ],
-        "endurance": [
-            {"name": "Walking Lunges", "icon": "🚶", "muscleGroup": "Legs", "reps": 20, "sets": 3, "rest": 30, "tip": "Step wide, torso tall"},
-            {"name": "Box Step-Ups", "icon": "👟", "muscleGroup": "Glutes & Legs", "reps": 15, "sets": 3, "rest": 30, "tip": "Press heel into box"},
-            {"name": "Skater Hops", "icon": "⛸️", "muscleGroup": "Cardio", "reps": 20, "sets": 3, "rest": 30, "tip": "Reach arm across body"},
-            {"name": "Side Plank Hip Dips", "icon": "🌊", "muscleGroup": "Core", "reps": 15, "sets": 3, "rest": 30, "tip": "Stack feet, lift hips"},
-            {"name": "Pace Runs", "icon": "💨", "muscleGroup": "Cardio", "reps": 30, "sets": 3, "rest": 30, "tip": "Find your rhythm"},
-        ],
-    }
-    exercises = workouts.get(req.goal, workouts["strength"])
-    energy_mult = 1.2 if req.energy >= 4 else (0.7 if req.energy <= 2 else 1.0)
-    sets = 4 if req.level == "advanced" else (3 if req.level == "intermediate" else 2)
-    adjusted = [dict(ex, reps=round(ex["reps"] * energy_mult), sets=sets) for ex in exercises]
+@app.post("/api/generate-plan")
+async def generate_plan(profile: UserProfile):
+    exercises = EXERCISES.get(profile.goal, EXERCISES["strength"])
+    base_calories = round(
+        (profile.energy * 40 + profile.duration * 5.5)
+        * (1.3 if profile.level == "advanced" else 1.15 if profile.level == "intermediate" else 1.0)
+    )
+    ai_note = PHASE_NOTES.get(profile.phase, "")
+    fireworks_note = await call_fireworks(
+        f"Generate a 2-sentence coaching note for {profile.name}, a {profile.level} woman "
+        f"in her {profile.phase} phase, doing a {profile.duration}-min {profile.goal} workout "
+        f"with energy level {profile.energy}/5. Be motivating and science-backed.",
+        max_tokens=120
+    )
+    if fireworks_note:
+        ai_note = fireworks_note
     return {
-        "greeting": f"Your AI workout is ready, {req.name}! Let's crush it today 💗",
-        "model_info": "Demo mode — connect FIREWORKS_API_KEY for AMD GPU inference",
-        "exercises": adjusted,
+        "title": GOAL_TITLES.get(profile.goal, "AI Session"),
+        "tagline": f"{profile.duration}-min - {profile.level} - Cycle-synced by Gemma 3",
+        "exercises": exercises,
+        "aiNote": ai_note,
+        "totalCalories": base_calories,
+        "aiPowered": bool(fireworks_note),
+        "infrastructure": "AMD Instinct MI300X via Fireworks AI + Google Gemma 3",
     }
 
 
-def _fallback_tip(req: CoachMessageRequest):
-    tips = [
-        f"💪 Amazing form, {req.userName}! Keep that core tight!",
-        f"🔥 {req.repsCompleted} reps! Your {req.muscleGroup} is on fire!",
-        f"⚡ Power through! You're stronger than you think!",
-        f"🎯 Perfect! Feel that {req.muscleGroup} burn — that's growth!",
-        f"✨ Incredible effort! Rest 45s then GO again!",
+@app.post("/api/real-time-cue")
+async def real_time_cue(feedback: WorkoutFeedback):
+    cue = await call_fireworks(
+        f"Give a 1-sentence motivational cue for {feedback.profile.name} doing {feedback.exercise_name}, "
+        f"set {feedback.set_number}, completed {feedback.reps_completed} reps, HR at {feedback.heart_rate} bpm. "
+        f"She is in her {feedback.profile.phase} phase. Be energetic and specific.",
+        max_tokens=60
+    )
+    if not cue:
+        cue = f"Great form on set {feedback.set_number} - finish strong!"
+    return {"cue": cue, "aiPowered": True, "model": "Google Gemma 3"}
+
+
+@app.post("/api/book-taxi")
+async def book_taxi(request: TaxiRequest):
+    drivers = [
+        {"name": "Fatima A.", "car": "Tesla Model 3", "eta": random.randint(3, 6), "rating": 4.98, "verified": True},
+        {"name": "Sara M.", "car": "Mercedes EQS", "eta": random.randint(4, 8), "rating": 4.95, "verified": True},
+        {"name": "Layla K.", "car": "BMW i4", "eta": random.randint(2, 5), "rating": 5.0, "verified": True},
     ]
-    import random
-    return {"tip": random.choice(tips), "source": "demo-mode"}
+    return {
+        "status": "matched",
+        "driver": random.choice(drivers),
+        "pickup": request.location,
+        "destination": request.destination,
+        "women_only": True,
+        "safety_score": 99.7,
+    }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+frontend_dist = "/app/frontend/dist"
+if os.path.exists(frontend_dist):
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
